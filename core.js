@@ -1,0 +1,6 @@
+'use strict';(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.Catalog=factory()})(globalThis,function(){
+function validURL(value){try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)&&!u.username&&!u.password}catch{return false}}
+function validate(raw){if(!raw||raw.version!==1||!Array.isArray(raw.assets)||raw.assets.length>1000)throw Error('Invalid catalog');let ids=new Set();return {version:1,assets:raw.assets.map(a=>{if(!a||typeof a.id!=='string'||!a.id||a.id.length>100||ids.has(a.id))throw Error('Invalid or duplicate ID');ids.add(a.id);for(const key of ['name','creator','license','credit'])if(typeof a[key]!=='string'||!a[key].trim()||a[key].length>500)throw Error(key+' is required (max 500 characters)');if(typeof a.source!=='string'||!validURL(a.source))throw Error('Source must be an HTTP(S) URL');return{id:a.id,name:a.name.trim(),creator:a.creator.trim(),license:a.license.trim(),credit:a.credit.trim(),source:a.source}})}}
+function credits(assets){return assets.map(a=>a.name+' — '+a.creator+'\nLicense: '+a.license+'\nSource: '+a.source+'\nCredit: '+a.credit).join('\n\n')}
+return {validate,validURL,credits};
+});
